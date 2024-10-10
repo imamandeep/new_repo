@@ -1,0 +1,30 @@
+name: PR Deployment
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Build the Docker image from the current repository
+      - name: Build Docker image
+        run: |
+          docker build -t pr-${{ github.event.number }} .
+
+      # Run the Docker container and map to a unique port for each PR
+      - name: Run Docker container
+        run: |
+          docker run -d -p 808${{ github.event.number }}:80 pr-${{ github.event.number }}
+
+      # Output the public IP and port information for the deployed PR
+      - name: Post deployment info
+        run: |
+          echo "PR Deployed at http://17.97.253.218:808${{ github.event.number }}"
+
